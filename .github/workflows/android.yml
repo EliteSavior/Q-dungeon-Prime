@@ -1,0 +1,92 @@
+name: Android APK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  ANDROID_HOME: ${{ github.workspace }}/android-sdk
+  ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+  ANDROID_NDK_ROOT: ${{ github.workspace }}/android-sdk/ndk/25.2.9519653
+  ANDROID_NDK_HOME: ${{ github.workspace }}/android-sdk/ndk/25.2.9519653
+
+jobs:
+  apk:
+    name: arm64 debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,x86_64-linux-android
+
+      - name: Install Android SDK and NDK r25c
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends unzip wget openjdk-17-jdk-headless
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdtools.zip
+          rm -rf /tmp/cmdtools-extract
+          unzip -q /tmp/cmdtools.zip -d /tmp/cmdtools-extract
+          mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
+          mv /tmp/cmdtools-extract/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest/"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/tmp/sdk-licenses.log
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+            "platform-tools" "platforms;android-33" "build-tools;34.0.0" "ndk;25.2.9519653"
+
+      - name: Install cargo-apk 0.10.0
+        run: cargo install cargo-apk --version 0.10.0 --locked
+
+      - name: Build release APK
+        run: |
+          set -eux
+          keytool -genkeypair -keystore "$RUNNER_TEMP/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          export CARGO_APK_RELEASE_KEYSTORE="$RUNNER_TEMP/debug.keystore"
+          export CARGO_APK_RELEASE_KEYSTORE_PASSWORD=android
+          cargo apk build --release -p qdp_android
+          # cargo-apk compresses release assets. Bevy reads them with
+          # AAsset_getBuffer, which only works on stored entries.
+          SRC="$(find target -name 'QDungeonPrime.apk' -print -quit)"
+          python3 tools/store-apk-assets.py "$SRC"
+
+      - name: Collect APK
+        id: apk
+        run: |
+          set -eux
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="debug"
+          fi
+          SRC="$(find target -name 'QDungeonPrime.apk' -print -quit)"
+          test -n "$SRC"
+          DEST="QDungeonPrime-${TAG}.apk"
+          cp "$SRC" "$DEST"
+          echo "apk=$DEST" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.apk }}
+          path: ${{ steps.apk.outputs.apk }}
+
+      - name: Attach APK to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.apk.outputs.apk }}

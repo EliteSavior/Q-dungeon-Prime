@@ -1,7 +1,7 @@
 [package]
 name = "de_game"
 readme = "README.md"
-description = "Digital Extinction (DE) is a 3D real-time strategy (RTS) game build with Bevy."
+description = "Q Dungeon Prime, a fork of Digital Extinction: a 3D real-time strategy (RTS) game built with Bevy."
 
 version.workspace = true
 edition.workspace = true
@@ -12,9 +12,18 @@ homepage.workspace = true
 license.workspace = true
 categories.workspace = true
 
+[lib]
+name = "de_game"
+path = "src/lib.rs"
+
 [[bin]]
 name = "de"
 path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = "symbols"
 
 [profile.lto]
 inherits = "release"
@@ -23,6 +32,8 @@ lto = true
 [profile.testing]
 inherits = "release"
 opt-level = 2
+lto = false
+strip = "none"
 debug = true
 debug-assertions = true
 overflow-checks = true
@@ -47,7 +58,6 @@ de_energy.workspace = true
 de_gui.workspace = true
 de_index.workspace = true
 de_loader.workspace = true
-de_lobby_client.workspace = true
 de_log.workspace = true
 de_menu.workspace = true
 de_movement.workspace = true
@@ -63,15 +73,21 @@ bevy.workspace = true
 bevy_kira_audio.workspace = true
 tracing.workspace = true
 
+[target.'cfg(not(target_os = "android"))'.dependencies]
+de_lobby_client = { workspace = true }
+
+[patch.crates-io]
+android-activity = { path = "third_party/android-activity" }
+
 [workspace]
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.0-dev"
+version = "0.1.2"
 
 edition = "2021"
 authors = ["Martin Indra <martin.indra@mgn.cz>"]
-repository = "https://github.com/DigitalExtinction/Game"
+repository = "https://github.com/EliteSavior/Q-dungeon-Prime"
 keywords = ["DigitalExtinction", "gamedev", "game", "bevy", "3d"]
 homepage = "https://de-game.org/"
 license = "AGPL-3.0"
@@ -79,36 +95,36 @@ categories = ["games"]
 
 [workspace.dependencies]
 # DE
-de_audio = { path = "crates/audio", version = "0.1.0-dev" }
-de_behaviour = { path = "crates/behaviour", version = "0.1.0-dev" }
-de_camera = { path = "crates/camera", version = "0.1.0-dev" }
-de_combat = { path = "crates/combat", version = "0.1.0-dev" }
-de_conf = { path = "crates/conf", version = "0.1.0-dev" }
-de_connector = { path = "crates/connector", version = "0.1.0-dev" }
-de_construction = { path = "crates/construction", version = "0.1.0-dev" }
-de_controller = { path = "crates/controller", version = "0.1.0-dev" }
-de_core = { path = "crates/core", version = "0.1.0-dev" }
-de_energy = { path = "crates/energy", version = "0.1.0-dev" }
-de_gui = { path = "crates/gui", version = "0.1.0-dev" }
-de_index = { path = "crates/index", version = "0.1.0-dev" }
-de_loader = { path = "crates/loader", version = "0.1.0-dev" }
-de_lobby_client = { path = "crates/lobby_client", version = "0.1.0-dev" }
-de_lobby_model = { path = "crates/lobby_model", version = "0.1.0-dev" }
-de_log = { path = "crates/log", version = "0.1.0-dev" }
-de_map = { path = "crates/map", version = "0.1.0-dev" }
-de_menu = { path = "crates/menu", version = "0.1.0-dev" }
-de_messages = { path = "crates/messages", version = "0.1.0-dev" }
-de_movement = { path = "crates/movement", version = "0.1.0-dev" }
-de_multiplayer = { path = "crates/multiplayer", version = "0.1.0-dev" }
-de_net = { path = "crates/net", version = "0.1.0-dev" }
-de_objects = { path = "crates/objects", version = "0.1.0-dev" }
-de_pathing = { path = "crates/pathing", version = "0.1.0-dev" }
-de_signs = { path = "crates/signs", version = "0.1.0-dev" }
-de_spawner = { path = "crates/spawner", version = "0.1.0-dev" }
-de_terrain = { path = "crates/terrain", version = "0.1.0-dev" }
-de_test_utils = { path = "crates/test_utils", version = "0.1.0-dev" }
-de_types = { path = "crates/types", version = "0.1.0-dev" }
-de_uom = { path = "crates/uom", version = "0.1.0-dev" }
+de_audio = { path = "crates/audio", version = "0.1.2" }
+de_behaviour = { path = "crates/behaviour", version = "0.1.2" }
+de_camera = { path = "crates/camera", version = "0.1.2" }
+de_combat = { path = "crates/combat", version = "0.1.2" }
+de_conf = { path = "crates/conf", version = "0.1.2" }
+de_connector = { path = "crates/connector", version = "0.1.2" }
+de_construction = { path = "crates/construction", version = "0.1.2" }
+de_controller = { path = "crates/controller", version = "0.1.2" }
+de_core = { path = "crates/core", version = "0.1.2" }
+de_energy = { path = "crates/energy", version = "0.1.2" }
+de_gui = { path = "crates/gui", version = "0.1.2" }
+de_index = { path = "crates/index", version = "0.1.2" }
+de_loader = { path = "crates/loader", version = "0.1.2" }
+de_lobby_client = { path = "crates/lobby_client", version = "0.1.2" }
+de_lobby_model = { path = "crates/lobby_model", version = "0.1.2" }
+de_log = { path = "crates/log", version = "0.1.2" }
+de_map = { path = "crates/map", version = "0.1.2" }
+de_menu = { path = "crates/menu", version = "0.1.2" }
+de_messages = { path = "crates/messages", version = "0.1.2" }
+de_movement = { path = "crates/movement", version = "0.1.2" }
+de_multiplayer = { path = "crates/multiplayer", version = "0.1.2" }
+de_net = { path = "crates/net", version = "0.1.2" }
+de_objects = { path = "crates/objects", version = "0.1.2" }
+de_pathing = { path = "crates/pathing", version = "0.1.2" }
+de_signs = { path = "crates/signs", version = "0.1.2" }
+de_spawner = { path = "crates/spawner", version = "0.1.2" }
+de_terrain = { path = "crates/terrain", version = "0.1.2" }
+de_test_utils = { path = "crates/test_utils", version = "0.1.2" }
+de_types = { path = "crates/types", version = "0.1.2" }
+de_uom = { path = "crates/uom", version = "0.1.2" }
 
 # Other
 ab_glyph = "0.2.21"

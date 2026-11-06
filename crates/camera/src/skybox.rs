@@ -49,7 +49,11 @@ fn configure_cubemap(
     match server.get_load_state(&source.handle) {
         Some(LoadState::Loaded) => (),
         Some(LoadState::NotLoaded) | Some(LoadState::Loading) => return false.into(),
-        _ => panic!("Unexpected loading state."),
+        other => {
+            error!("Skybox failed to load: {other:?}");
+            source.configured = true;
+            return true.into();
+        }
     }
 
     let image = images.get_mut(&source.handle).unwrap();
@@ -68,7 +72,7 @@ fn configure_cubemap(
 fn setup_camera(
     mut commands: Commands,
     skybox: ResMut<SkyboxSource>,
-    camera_query: Query<(Entity, Has<Skybox>), With<Camera>>,
+    camera_query: Query<(Entity, Has<Skybox>), With<Camera3d>>,
 ) {
     let (entity, configured) = camera_query.single();
     if configured {

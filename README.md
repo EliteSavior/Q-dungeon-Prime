@@ -1,18 +1,76 @@
-# Digital Extinction
+# Q Dungeon Prime
 
-[![AGPLv3](https://img.shields.io/badge/license-AGPLv3-088F8F.svg)](https://github.com/DigitalExtinction/Game#license)
-[![CI](https://github.com/DigitalExtinction/Game/actions/workflows/test.yml/badge.svg)](https://github.com/DigitalExtinction/Game/actions/workflows/test.yml)
+[![AGPLv3](https://img.shields.io/badge/license-AGPLv3-088F8F.svg)](LICENSE)
+[![CI](https://github.com/EliteSavior/Q-dungeon-Prime/actions/workflows/test.yml/badge.svg)](https://github.com/EliteSavior/Q-dungeon-Prime/actions/workflows/test.yml)
 [![Sponsors](https://img.shields.io/github/sponsors/Indy2222)](https://github.com/sponsors/Indy2222)
 
-Digital Extinction ([de-game.org](https://de-game.org/),
+Q Dungeon Prime is a fork of [Digital Extinction](https://github.com/DigitalExtinction/Game)
+([de-game.org](https://de-game.org/),
 [Documentation](https://docs.de-game.org/),
-[GitHub](https://github.com/DigitalExtinction/Game),
-[Discord](https://discord.gg/vHMFuCWGSX)) is a 3D real-time strategy (RTS)
-game. It is set in the near future when humans and AI fight over their
-existence.
+[Discord](https://discord.gg/vHMFuCWGSX)). Digital Extinction is a 3D real-time
+strategy (RTS) game set in the near future when humans and AI fight over their
+existence. Upstream is archived. This fork keeps the source open.
+
+## Fork and licenses
+
+This repository is a fork of [DigitalExtinction/Game](https://github.com/DigitalExtinction/Game).
+Copyright stays with the original authors and later contributors; see the git history.
+The source of this fork stays public.
+
+* **Code** is licensed under the GNU Affero General Public License v3.0
+  ([LICENSE](LICENSE) or
+  [https://www.gnu.org/licenses/agpl-3.0.en.html](https://www.gnu.org/licenses/agpl-3.0.en.html)).
+* **Assets** under [`assets/`](assets/) are licensed under
+  [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode),
+  except files in a directory that contains its own `LICENSE`.
+* **Fira Mono** (`assets/fonts/Fira_Mono/`) is under the SIL Open Font License 1.1.
+  See [`assets/fonts/Fira_Mono/LICENSE`](assets/fonts/Fira_Mono/LICENSE).
+
+## Android
+
+The Android app id is `com.elitesavior.qdungeonprime`, the label is
+`Q Dungeon Prime`, and `minSdk` is 28. The release APK contains `arm64-v8a`
+and `x86_64` (the second ABI is for the emulator). It is signed with the
+Android debug keystore and does not request `INTERNET`: the lobby client is
+not compiled in. In-game UDP code is still linked, but nothing opens a socket
+until a multiplayer match starts, and that menu is replaced with an
+unavailable notice.
+
+A cold start used to abort inside `android-activity` 0.5.2 before `android_main`
+because Android passes a null saved-state pointer. The vendored patch treats
+that as an empty state. If a later panic still happens, the message and
+backtrace are written to `crash.txt` in the app's internal and external files
+directories (`Android/data/com.elitesavior.qdungeonprime/files/crash.txt`) and
+logged to logcat under the tag `QDungeonPrime`.
+
+On Android the configuration directory is the app files directory. The first
+launch writes `DigitalExtinction/conf.yaml` there from the built-in defaults,
+so a missing desktop config path does not show an error on the main menu.
+
+During a match, a semi-transparent overlay mirrors the desktop bindings:
+the left stick pans the camera (arrow keys), the right stick moves a cursor,
+L and R are left and right click, +/− zoom, RL/RR orbit the camera, Esc
+pauses, and B/P start the base and power-hub drafts. Real keyboard, mouse,
+and gamepad events keep working at the same time. The main menu stays a
+normal touch UI. Map files are copied out of the APK into
+internal storage when the map list opens, because the map loader reads real
+files. Fonts, audio, models, textures, and shaders are loaded from the APK
+through Bevy's Android asset reader. Release packaging stores those entries
+uncompressed, which that reader requires.
+
+```
+rustup target add aarch64-linux-android x86_64-linux-android
+cargo install cargo-apk --version 0.10.0 --locked
+export ANDROID_HOME="$HOME/android-sdk"
+export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/25.2.9519653"
+export CARGO_APK_RELEASE_KEYSTORE="$HOME/.android/debug.keystore"
+export CARGO_APK_RELEASE_KEYSTORE_PASSWORD=android
+cargo apk build --release -p qdp_android
+python3 tools/store-apk-assets.py target/release/apk/QDungeonPrime.apk
+```
 
 It is [open source & free software](#license). Forever! It runs on Linux,
-Windows and potentially other platforms.
+Windows, Android, and potentially other platforms.
 
 The game is completely written in [Rust](https://www.rust-lang.org/) with
 [Bevy](https://bevyengine.org/) used as the engine.

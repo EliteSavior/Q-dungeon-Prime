@@ -16,19 +16,19 @@ pub(crate) struct CurrentLogHandle {
     guard: WorkerGuard,
 }
 
+struct FileLog {
+    writer: tracing_appender::non_blocking::NonBlocking,
+    guard: WorkerGuard,
+    dir: PathBuf,
+    path: PathBuf,
+}
+
 impl Plugin for LogPlugin {
     fn build(&self, app: &mut App) {
-        let dir: PathBuf = logs_dir()
-            .map(|d| d.into())
-            .unwrap_or(PathBuf::from("logs"));
-
-        // for file name
-        let dt = chrono::Local::now();
-        let path: PathBuf = dt.format("%Y-%m-%d_%H-%M-%S.jsonl").to_string().into();
-
-        let file_appender = tracing_appender::rolling::never(dir.as_path(), path.as_path());
-
-        let (non_blocking_log_writer, _guard) = tracing_appender::non_blocking(file_appender);
+        let file_log = open_file_log();
+        let file_layer = file_log
+            .as_ref()
+            .map(|log| fmt::layer().json().with_writer(log.writer.clone()));
 
         let collector = tracing_subscriber::registry()
             .with(
@@ -38,12 +38,36 @@ impl Plugin for LogPlugin {
                     .from_env_lossy(),
             )
             .with(fmt::layer().with_writer(std::io::stdout))
-            .with(fmt::layer().json().with_writer(non_blocking_log_writer));
+            .with(file_layer);
         tracing::subscriber::set_global_default(collector)
             .expect("Unable to set a global collector");
 
-        app.insert_resource(CurrentLogHandle { guard: _guard });
-
-        info!("Logging to file {path:?} in directory: {dir:?}");
+        if let Some(log) = file_log {
+            info!("Logging to file {:?} in directory: {:?}", log.path, log.dir);
+            app.insert_resource(CurrentLogHandle { guard: log.guard });
+        } else {
+            info!("File logging unavailable; writing to stderr/logcat only");
+        }
     }
+}
+
+/// Opens a rolling log file when a writable logs directory exists.
+///
+/// Android native activities do not have a home directory, and the process
+/// working directory is not writable. Falling back to a relative `logs/` path
+/// makes `tracing-appender` panic during startup, so file logging is skipped.
+fn open_file_log() -> Option<FileLog> {
+    let dir: PathBuf = logs_dir().ok()?.into();
+    std::fs::create_dir_all(&dir).ok()?;
+
+    let dt = chrono::Local::now();
+    let path: PathBuf = dt.format("%Y-%m-%d_%H-%M-%S.jsonl").to_string().into();
+    let file_appender = tracing_appender::rolling::never(dir.as_path(), path.as_path());
+    let (writer, guard) = tracing_appender::non_blocking(file_appender);
+    Some(FileLog {
+        writer,
+        guard,
+        dir,
+        path,
+    })
 }

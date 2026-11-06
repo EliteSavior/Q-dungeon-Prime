@@ -61,17 +61,28 @@ where
             .map(
                 |key| match server.get_recursive_dependency_load_state(self.get(key)) {
                     Some(load_state) => match load_state {
-                        RecursiveDependencyLoadState::Failed => panic!("Model loading failed"),
+                        RecursiveDependencyLoadState::Failed => {
+                            error!(
+                                "Failed to load asset {}/{}.{}",
+                                Self::DIRECTORY,
+                                key.stem(),
+                                Self::SUFFIX
+                            );
+                            true.into()
+                        }
                         RecursiveDependencyLoadState::NotLoaded => false.into(),
                         RecursiveDependencyLoadState::Loading => false.into(),
                         RecursiveDependencyLoadState::Loaded => true.into(),
                     },
-                    None => panic!(
-                        "Unknown asset: {}/{}.{}",
-                        Self::DIRECTORY,
-                        key.stem(),
-                        Self::SUFFIX
-                    ),
+                    None => {
+                        error!(
+                            "Unknown asset: {}/{}.{}",
+                            Self::DIRECTORY,
+                            key.stem(),
+                            Self::SUFFIX
+                        );
+                        true.into()
+                    }
                 },
             )
             .reduce(|a, b| a + b)

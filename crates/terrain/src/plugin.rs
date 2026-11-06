@@ -61,7 +61,10 @@ fn setup_textures(
         Some(load_state) => match load_state {
             LoadState::NotLoaded => false.into(),
             LoadState::Loading => false.into(),
-            LoadState::Failed => panic!("Texture loading has failed."),
+            LoadState::Failed => {
+                error!("Terrain texture failed to load");
+                true.into()
+            }
             LoadState::Loaded => {
                 // Ideally, this setup would happen in some kind of asset post
                 // processing. This was not supported by Bevy at the time of
@@ -78,7 +81,10 @@ fn setup_textures(
                 true.into()
             }
         },
-        None => panic!("Terrain texture asset unknown."),
+        None => {
+            error!("Terrain texture asset unknown");
+            true.into()
+        }
     }
 }
 

@@ -8,7 +8,7 @@ mod minimap;
 mod selection;
 
 pub(crate) use interaction::HudNodes;
-pub(crate) use menu::{GameMenuSet, ToggleGameMenuEvent};
+pub(crate) use menu::{GameMenuSet, PopUpMenu, ToggleGameMenuEvent};
 pub(crate) use selection::UpdateSelectionBoxEvent;
 
 use self::{

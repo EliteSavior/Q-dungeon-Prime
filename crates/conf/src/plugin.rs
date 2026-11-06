@@ -9,7 +9,7 @@ use iyes_progress::prelude::*;
 use tracing::error;
 
 use crate::macros::ConfigLoadError;
-use crate::Configuration;
+use crate::{Configuration, RawConfiguration};
 
 pub(super) struct ConfPlugin;
 
@@ -35,7 +35,18 @@ fn cleanup(mut commands: Commands) {
 
 fn start_loading(mut commands: Commands) {
     let task = IoTaskPool::get().spawn(async {
-        let path = conf_dir().map_err(ConfigLoadError::from)?.join("conf.yaml");
+        let dir = conf_dir().map_err(ConfigLoadError::from)?;
+        async_std::fs::create_dir_all(&dir)
+            .await
+            .map_err(|err| ConfigLoadError::Other(err.into()))?;
+        let path = dir.join("conf.yaml");
+        if !path.is_file().await {
+            let text = serde_yaml::to_string(&RawConfiguration::default())
+                .map_err(|err| ConfigLoadError::Other(err.into()))?;
+            async_std::fs::write(&path, text)
+                .await
+                .map_err(|err| ConfigLoadError::Other(err.into()))?;
+        }
         Configuration::load(path.as_path()).await
     });
     commands.insert_resource(LoadingTask(task));

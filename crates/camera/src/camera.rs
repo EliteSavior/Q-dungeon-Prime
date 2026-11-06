@@ -320,12 +320,16 @@ fn setup(mut commands: Commands, conf: Res<Configuration>) {
         point: Vec3::ZERO,
         distance,
     });
+    // One world camera. Bevy draws UI in that camera's pass, after the
+    // scene, so the HUD and touch overlay sit on the picture that is
+    // actually presented. A second camera never reached the window on Android.
     commands.spawn((
         Camera3dBundle {
             transform: Transform::from_xyz(0.0, distance.into(), 0.0)
                 .looking_at(Vec3::ZERO, -Vec3::Z),
             ..Default::default()
         },
+        bevy::ui::IsDefaultUiCamera,
         DespawnOnGameExit,
     ));
 
