@@ -30,7 +30,7 @@ pub(crate) enum GameMenuSet {
 pub(crate) struct ToggleGameMenuEvent;
 
 #[derive(Component)]
-struct PopUpMenu;
+pub(crate) struct PopUpMenu;
 
 #[derive(Component, Clone, Copy)]
 enum ButtonAction {
@@ -60,7 +60,7 @@ fn setup(mut commands: GuiCommands) {
                 ..default()
             },
             visibility: Visibility::Hidden,
-            z_index: ZIndex::Local(1000),
+            z_index: ZIndex::Global(40),
             ..default()
         })
         .insert((PopUpMenu, InteractionBlocker))

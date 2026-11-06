@@ -43,8 +43,16 @@ backtrace are written to `crash.txt` in the app's internal and external files
 directories (`Android/data/com.elitesavior.qdungeonprime/files/crash.txt`) and
 logged to logcat under the tag `QDungeonPrime`.
 
-Touch controls for camera and units are not implemented. Bevy UI may still
-treat a tap as a button press. Map files are copied out of the APK into
+On Android the configuration directory is the app files directory. The first
+launch writes `DigitalExtinction/conf.yaml` there from the built-in defaults,
+so a missing desktop config path does not show an error on the main menu.
+
+During a match, a semi-transparent overlay mirrors the desktop bindings:
+the left stick pans the camera (arrow keys), the right stick moves a cursor,
+L and R are left and right click, +/− zoom, RL/RR orbit the camera, Esc
+pauses, and B/P start the base and power-hub drafts. Real keyboard, mouse,
+and gamepad events keep working at the same time. The main menu stays a
+normal touch UI. Map files are copied out of the APK into
 internal storage when the map list opens, because the map loader reads real
 files. Fonts, audio, models, textures, and shaders are loaded from the APK
 through Bevy's Android asset reader. Release packaging stores those entries

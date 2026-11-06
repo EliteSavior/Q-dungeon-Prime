@@ -135,7 +135,7 @@ fn calculate_volume_and_pan(
 
 fn play(
     mut commands: Commands,
-    camera: Query<&GlobalTransform, With<Camera>>,
+    camera: Query<&GlobalTransform, With<Camera3d>>,
     focus: Res<CameraFocus>,
     audio: Res<Audio>,
     sounds: Res<Sounds>,
@@ -170,7 +170,7 @@ type InitializedSound<'s> = (Entity, &'s Handle<AudioInstance>, &'s GlobalTransf
 fn update_spatial(
     mut commands: Commands,
     spatial_audios: Query<InitializedSound, With<SpatialSound>>,
-    camera: Query<&GlobalTransform, With<Camera>>,
+    camera: Query<&GlobalTransform, With<Camera3d>>,
     focus: Res<CameraFocus>,
     config: Res<Configuration>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,

@@ -83,7 +83,7 @@ android-activity = { path = "third_party/android-activity" }
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.1.2"
 
 edition = "2021"
 authors = ["Martin Indra <martin.indra@mgn.cz>"]
@@ -95,36 +95,36 @@ categories = ["games"]
 
 [workspace.dependencies]
 # DE
-de_audio = { path = "crates/audio", version = "0.1.1" }
-de_behaviour = { path = "crates/behaviour", version = "0.1.1" }
-de_camera = { path = "crates/camera", version = "0.1.1" }
-de_combat = { path = "crates/combat", version = "0.1.1" }
-de_conf = { path = "crates/conf", version = "0.1.1" }
-de_connector = { path = "crates/connector", version = "0.1.1" }
-de_construction = { path = "crates/construction", version = "0.1.1" }
-de_controller = { path = "crates/controller", version = "0.1.1" }
-de_core = { path = "crates/core", version = "0.1.1" }
-de_energy = { path = "crates/energy", version = "0.1.1" }
-de_gui = { path = "crates/gui", version = "0.1.1" }
-de_index = { path = "crates/index", version = "0.1.1" }
-de_loader = { path = "crates/loader", version = "0.1.1" }
-de_lobby_client = { path = "crates/lobby_client", version = "0.1.1" }
-de_lobby_model = { path = "crates/lobby_model", version = "0.1.1" }
-de_log = { path = "crates/log", version = "0.1.1" }
-de_map = { path = "crates/map", version = "0.1.1" }
-de_menu = { path = "crates/menu", version = "0.1.1" }
-de_messages = { path = "crates/messages", version = "0.1.1" }
-de_movement = { path = "crates/movement", version = "0.1.1" }
-de_multiplayer = { path = "crates/multiplayer", version = "0.1.1" }
-de_net = { path = "crates/net", version = "0.1.1" }
-de_objects = { path = "crates/objects", version = "0.1.1" }
-de_pathing = { path = "crates/pathing", version = "0.1.1" }
-de_signs = { path = "crates/signs", version = "0.1.1" }
-de_spawner = { path = "crates/spawner", version = "0.1.1" }
-de_terrain = { path = "crates/terrain", version = "0.1.1" }
-de_test_utils = { path = "crates/test_utils", version = "0.1.1" }
-de_types = { path = "crates/types", version = "0.1.1" }
-de_uom = { path = "crates/uom", version = "0.1.1" }
+de_audio = { path = "crates/audio", version = "0.1.2" }
+de_behaviour = { path = "crates/behaviour", version = "0.1.2" }
+de_camera = { path = "crates/camera", version = "0.1.2" }
+de_combat = { path = "crates/combat", version = "0.1.2" }
+de_conf = { path = "crates/conf", version = "0.1.2" }
+de_connector = { path = "crates/connector", version = "0.1.2" }
+de_construction = { path = "crates/construction", version = "0.1.2" }
+de_controller = { path = "crates/controller", version = "0.1.2" }
+de_core = { path = "crates/core", version = "0.1.2" }
+de_energy = { path = "crates/energy", version = "0.1.2" }
+de_gui = { path = "crates/gui", version = "0.1.2" }
+de_index = { path = "crates/index", version = "0.1.2" }
+de_loader = { path = "crates/loader", version = "0.1.2" }
+de_lobby_client = { path = "crates/lobby_client", version = "0.1.2" }
+de_lobby_model = { path = "crates/lobby_model", version = "0.1.2" }
+de_log = { path = "crates/log", version = "0.1.2" }
+de_map = { path = "crates/map", version = "0.1.2" }
+de_menu = { path = "crates/menu", version = "0.1.2" }
+de_messages = { path = "crates/messages", version = "0.1.2" }
+de_movement = { path = "crates/movement", version = "0.1.2" }
+de_multiplayer = { path = "crates/multiplayer", version = "0.1.2" }
+de_net = { path = "crates/net", version = "0.1.2" }
+de_objects = { path = "crates/objects", version = "0.1.2" }
+de_pathing = { path = "crates/pathing", version = "0.1.2" }
+de_signs = { path = "crates/signs", version = "0.1.2" }
+de_spawner = { path = "crates/spawner", version = "0.1.2" }
+de_terrain = { path = "crates/terrain", version = "0.1.2" }
+de_test_utils = { path = "crates/test_utils", version = "0.1.2" }
+de_types = { path = "crates/types", version = "0.1.2" }
+de_uom = { path = "crates/uom", version = "0.1.2" }
 
 # Other
 ab_glyph = "0.2.21"

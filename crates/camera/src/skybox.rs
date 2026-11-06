@@ -72,7 +72,7 @@ fn configure_cubemap(
 fn setup_camera(
     mut commands: Commands,
     skybox: ResMut<SkyboxSource>,
-    camera_query: Query<(Entity, Has<Skybox>), With<Camera>>,
+    camera_query: Query<(Entity, Has<Skybox>), With<Camera3d>>,
 ) {
     let (entity, configured) = camera_query.single();
     if configured {

@@ -44,13 +44,15 @@ impl<S: States> Plugin for ScreenStatePlugin<S> {
 pub(crate) struct Menu {
     root_node: Entity,
     corner_node: Entity,
+    camera: Entity,
 }
 
 impl Menu {
-    fn new(root_node: Entity, corner_node: Entity) -> Self {
+    fn new(root_node: Entity, corner_node: Entity, camera: Entity) -> Self {
         Self {
             root_node,
             corner_node,
+            camera,
         }
     }
 
@@ -60,6 +62,10 @@ impl Menu {
 
     fn corner_node(&self) -> Entity {
         self.corner_node
+    }
+
+    fn camera(&self) -> Entity {
+        self.camera
     }
 }
 
@@ -89,20 +95,17 @@ fn hide_show_corner(
 }
 
 fn setup(mut commands: GuiCommands) {
-    commands.spawn(Camera2dBundle::default());
+    let camera = commands.spawn(Camera2dBundle::default()).id();
     let root_node = spawn_root_node(&mut commands);
     let corner_node = spawn_corner_node(&mut commands);
-    commands.insert_resource(Menu::new(root_node, corner_node));
+    commands.insert_resource(Menu::new(root_node, corner_node, camera));
 }
 
-fn cleanup(mut commands: Commands, menu: Res<Menu>, camera: Query<Entity, With<Camera2d>>) {
+fn cleanup(mut commands: Commands, menu: Res<Menu>) {
     commands.entity(menu.root_node()).despawn_recursive();
     commands.entity(menu.corner_node()).despawn_recursive();
+    commands.entity(menu.camera()).despawn_recursive();
     commands.remove_resource::<Menu>();
-
-    for entity in camera.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
 }
 
 fn spawn_root_node(commands: &mut GuiCommands) -> Entity {

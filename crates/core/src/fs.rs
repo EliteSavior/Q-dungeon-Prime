@@ -5,7 +5,23 @@ use thiserror::Error;
 
 /// Returns DE configuration directory.
 pub fn conf_dir() -> Result<AsyncPathBuf, DirError> {
-    dir(dirs::config_dir)
+    #[cfg(target_os = "android")]
+    {
+        let base = bevy::winit::ANDROID_APP
+            .get()
+            .and_then(|app| {
+                app.internal_data_path()
+                    .or_else(|| app.external_data_path())
+            })
+            .ok_or(DirError(
+                "Android app files directory is not available yet.",
+            ))?;
+        return Ok(AsyncPathBuf::from(base).join("DigitalExtinction"));
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        dir(dirs::config_dir)
+    }
 }
 
 /// Returns DE logging directory.

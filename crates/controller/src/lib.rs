@@ -14,6 +14,7 @@ mod hud;
 mod mouse;
 mod ray;
 mod selection;
+mod touch;
 
 const SELECTION_BAR_ID: u32 = 0;
 const POINTER_BAR_ID: u32 = 1;
@@ -28,5 +29,6 @@ impl PluginGroup for ControllerPluginGroup {
             .add(SelectionPlugin)
             .add(DraftPlugin)
             .add(HudPlugin)
+            .add(touch::TouchPlugin)
     }
 }
