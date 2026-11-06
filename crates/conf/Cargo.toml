@@ -18,7 +18,7 @@ de_gui.workspace = true
 de_uom.workspace = true
 
 
-conf_macros = { path = "macros", version = "0.1.0-dev" }
+conf_macros = { path = "macros", version = "0.1.1" }
 
 # Other
 anyhow.workspace = true

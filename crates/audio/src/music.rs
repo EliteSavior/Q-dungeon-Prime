@@ -31,12 +31,23 @@ fn load(server: Res<AssetServer>, tracks: Res<Tracks>) -> Progress {
     match server.get_load_state(&tracks.0) {
         Some(LoadState::Loaded) => true.into(),
         Some(LoadState::NotLoaded) | Some(LoadState::Loading) => false.into(),
-        _ => panic!("Unexpected loading state."),
+        other => {
+            error!("Menu music failed to load: {other:?}");
+            true.into()
+        }
     }
 }
 
-fn start(audio: Res<Audio>, tracks: Res<Tracks>, config: Res<Configuration>) {
+fn start(
+    server: Res<AssetServer>,
+    audio: Res<Audio>,
+    tracks: Res<Tracks>,
+    config: Res<Configuration>,
+) {
     if !config.audio().music_enabled() {
+        return;
+    }
+    if server.get_load_state(&tracks.0) != Some(LoadState::Loaded) {
         return;
     }
 

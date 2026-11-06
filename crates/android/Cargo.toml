@@ -24,7 +24,7 @@ bevy.workspace = true
 package = "com.elitesavior.qdungeonprime"
 apk_name = "QDungeonPrime"
 assets = "../../assets"
-build_targets = ["aarch64-linux-android"]
+build_targets = ["aarch64-linux-android", "x86_64-linux-android"]
 # Dev-profile debuginfo makes the .so hundreds of megabytes. Strip symbols
 # while still signing with the debug keystore.
 strip = "strip"

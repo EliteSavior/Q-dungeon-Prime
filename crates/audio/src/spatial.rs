@@ -80,7 +80,10 @@ fn load(server: Res<AssetServer>, sounds: Res<Sounds>) -> Progress {
             .map(|handle| match server.get_load_state(handle) {
                 Some(LoadState::Loaded) => 1,
                 Some(LoadState::NotLoaded) | Some(LoadState::Loading) => 0,
-                _ => panic!("Unexpected loading state."),
+                other => {
+                    error!("Spatial sound failed to load: {other:?}");
+                    1
+                }
             })
             .sum(),
         total: sounds

@@ -29,27 +29,37 @@ The source of this fork stays public.
 ## Android
 
 The Android app id is `com.elitesavior.qdungeonprime`, the label is
-`Q Dungeon Prime`, and `minSdk` is 28. Only `arm64-v8a` is built. The debug
-APK is signed with the Android debug keystore and does not request
-`INTERNET`: the lobby client is not compiled in. In-game UDP code is still
-linked, but nothing opens a socket until a multiplayer match starts, and that
-menu is replaced with an unavailable notice.
+`Q Dungeon Prime`, and `minSdk` is 28. The release APK contains `arm64-v8a`
+and `x86_64` (the second ABI is for the emulator). It is signed with the
+Android debug keystore and does not request `INTERNET`: the lobby client is
+not compiled in. In-game UDP code is still linked, but nothing opens a socket
+until a multiplayer match starts, and that menu is replaced with an
+unavailable notice.
+
+A cold start used to abort inside `android-activity` 0.5.2 before `android_main`
+because Android passes a null saved-state pointer. The vendored patch treats
+that as an empty state. If a later panic still happens, the message and
+backtrace are written to `crash.txt` in the app's internal and external files
+directories (`Android/data/com.elitesavior.qdungeonprime/files/crash.txt`) and
+logged to logcat under the tag `QDungeonPrime`.
 
 Touch controls for camera and units are not implemented. Bevy UI may still
 treat a tap as a button press. Map files are copied out of the APK into
 internal storage when the map list opens, because the map loader reads real
 files. Fonts, audio, models, textures, and shaders are loaded from the APK
-through Bevy's Android asset reader.
+through Bevy's Android asset reader. Release packaging stores those entries
+uncompressed, which that reader requires.
 
 ```
-rustup target add aarch64-linux-android
+rustup target add aarch64-linux-android x86_64-linux-android
 cargo install cargo-apk --version 0.10.0 --locked
 export ANDROID_HOME="$HOME/android-sdk"
 export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/25.2.9519653"
-cargo apk build -p qdp_android
+export CARGO_APK_RELEASE_KEYSTORE="$HOME/.android/debug.keystore"
+export CARGO_APK_RELEASE_KEYSTORE_PASSWORD=android
+cargo apk build --release -p qdp_android
+python3 tools/store-apk-assets.py target/release/apk/QDungeonPrime.apk
 ```
-
-The APK is written under `target/` as `QDungeonPrime.apk`.
 
 It is [open source & free software](#license). Forever! It runs on Linux,
 Windows, Android, and potentially other platforms.

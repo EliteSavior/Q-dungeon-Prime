@@ -49,7 +49,11 @@ fn configure_cubemap(
     match server.get_load_state(&source.handle) {
         Some(LoadState::Loaded) => (),
         Some(LoadState::NotLoaded) | Some(LoadState::Loading) => return false.into(),
-        _ => panic!("Unexpected loading state."),
+        other => {
+            error!("Skybox failed to load: {other:?}");
+            source.configured = true;
+            return true.into();
+        }
     }
 
     let image = images.get_mut(&source.handle).unwrap();

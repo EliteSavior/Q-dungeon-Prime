@@ -57,30 +57,55 @@ pub fn run() {
         #[cfg(target_os = "android")]
         app.insert_resource(Msaa::Off);
 
-        app.add_plugins(
+        let window_plugin = WindowPlugin {
+            primary_window: Some(Window {
+                title: "Q Dungeon Prime".to_string(),
+                mode: WindowMode::BorderlessFullscreen,
+                ..Default::default()
+            }),
+            ..default()
+        };
+        #[cfg(not(target_os = "android"))]
+        let defaults = DefaultPlugins.set(window_plugin).disable::<LogPlugin>();
+        // Mobile GPUs reject Bevy's default required feature
+        // `TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES`. Ask only for features the
+        // adapter reports, and allow a GL surface when Vulkan is missing.
+        #[cfg(target_os = "android")]
+        let defaults = {
+            use bevy::render::{
+                settings::{
+                    Backends, PowerPreference, WgpuFeatures, WgpuSettings, WgpuSettingsPriority,
+                },
+                RenderPlugin,
+            };
             DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Q Dungeon Prime".to_string(),
-                        mode: WindowMode::BorderlessFullscreen,
+                .set(window_plugin)
+                .set(RenderPlugin {
+                    render_creation: WgpuSettings {
+                        backends: Some(Backends::VULKAN | Backends::GL),
+                        power_preference: PowerPreference::LowPower,
+                        priority: WgpuSettingsPriority::Functionality,
+                        features: WgpuFeatures::empty(),
                         ..Default::default()
-                    }),
-                    ..default()
+                    }
+                    .into(),
+                    synchronous_pipeline_compilation: true,
                 })
-                .disable::<LogPlugin>(),
-        )
-        .add_plugins(AudioPlugin)
-        .add_plugins((
-            LogDiagnosticsPlugin {
-                debug: false,
-                wait_duration: Duration::from_secs(10),
-                filter: None,
-            },
-            FrameTimeDiagnosticsPlugin,
-            GamePlugin,
-        ))
-        .add_plugins(ConfigPluginGroup)
-        .add_plugins(GuiPluginGroup);
+                .disable::<LogPlugin>()
+        };
+        app.add_plugins(defaults)
+            .add_plugins(AudioPlugin)
+            .add_plugins((
+                LogDiagnosticsPlugin {
+                    debug: false,
+                    wait_duration: Duration::from_secs(10),
+                    filter: None,
+                },
+                FrameTimeDiagnosticsPlugin,
+                GamePlugin,
+            ))
+            .add_plugins(ConfigPluginGroup)
+            .add_plugins(GuiPluginGroup);
 
         #[cfg(not(target_os = "android"))]
         app.add_plugins(LobbyClientPluginGroup);
