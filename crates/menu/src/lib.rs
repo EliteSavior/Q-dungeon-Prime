@@ -4,14 +4,20 @@ use de_core::{gresult::GameResult, nested_state, state::AppState};
 use mainmenu::MainMenuPlugin;
 use mapselection::MapSelectionPlugin;
 use menu::{MenuPlugin, ScreenStatePlugin};
+#[cfg(not(target_os = "android"))]
 use multiplayer::MultiplayerPlugin;
+#[cfg(target_os = "android")]
+use multiplayer_unavailable::MultiplayerPlugin;
 use singleplayer::SinglePlayerPlugin;
 
 mod aftergame;
 mod mainmenu;
 mod mapselection;
 mod menu;
+#[cfg(not(target_os = "android"))]
 mod multiplayer;
+#[cfg(target_os = "android")]
+mod multiplayer_unavailable;
 mod singleplayer;
 
 pub struct MenuPluginGroup;

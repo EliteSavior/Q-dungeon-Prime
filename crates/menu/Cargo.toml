@@ -16,11 +16,7 @@ categories.workspace = true
 de_conf.workspace = true
 de_core.workspace = true
 de_gui.workspace = true
-de_lobby_client.workspace = true
-de_lobby_model.workspace = true
 de_map.workspace = true
-de_messages.workspace = true
-de_multiplayer.workspace = true
 de_types.workspace = true
 
 # Other
@@ -28,3 +24,9 @@ async-std.workspace = true
 bevy.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+de_lobby_client = { workspace = true }
+de_lobby_model = { workspace = true }
+de_messages = { workspace = true }
+de_multiplayer = { workspace = true }

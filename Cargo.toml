@@ -1,7 +1,7 @@
 [package]
 name = "de_game"
 readme = "README.md"
-description = "Digital Extinction (DE) is a 3D real-time strategy (RTS) game build with Bevy."
+description = "Q Dungeon Prime, a fork of Digital Extinction: a 3D real-time strategy (RTS) game built with Bevy."
 
 version.workspace = true
 edition.workspace = true
@@ -11,6 +11,10 @@ keywords.workspace = true
 homepage.workspace = true
 license.workspace = true
 categories.workspace = true
+
+[lib]
+name = "de_game"
+path = "src/lib.rs"
 
 [[bin]]
 name = "de"
@@ -47,7 +51,6 @@ de_energy.workspace = true
 de_gui.workspace = true
 de_index.workspace = true
 de_loader.workspace = true
-de_lobby_client.workspace = true
 de_log.workspace = true
 de_menu.workspace = true
 de_movement.workspace = true
@@ -63,6 +66,9 @@ bevy.workspace = true
 bevy_kira_audio.workspace = true
 tracing.workspace = true
 
+[target.'cfg(not(target_os = "android"))'.dependencies]
+de_lobby_client = { workspace = true }
+
 [workspace]
 members = ["crates/*"]
 
@@ -71,7 +77,7 @@ version = "0.1.0-dev"
 
 edition = "2021"
 authors = ["Martin Indra <martin.indra@mgn.cz>"]
-repository = "https://github.com/DigitalExtinction/Game"
+repository = "https://github.com/EliteSavior/Q-dungeon-Prime"
 keywords = ["DigitalExtinction", "gamedev", "game", "bevy", "3d"]
 homepage = "https://de-game.org/"
 license = "AGPL-3.0"

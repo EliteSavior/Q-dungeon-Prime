@@ -1,14 +1,20 @@
 use std::path::{Path, PathBuf};
 
-use async_std::{fs, io, stream::StreamExt};
+#[cfg(not(target_os = "android"))]
+use async_std::stream::StreamExt;
+use async_std::{fs, io};
 use bevy::{
     prelude::*,
     tasks::{futures_lite::future, IoTaskPool, Task},
 };
-use de_core::{assets::asset_path, log_full_error, state::AppState};
+#[cfg(not(target_os = "android"))]
+use de_core::assets::asset_path;
+use de_core::{log_full_error, state::AppState};
 use de_gui::{ButtonCommands, GuiCommands, OuterStyle};
+#[cfg(not(target_os = "android"))]
+use de_map::io::MAP_FILE_SUFFIX;
 use de_map::{
-    io::{load_metadata, MapLoadingError, MAP_FILE_SUFFIX},
+    io::{load_metadata, MapLoadingError},
     meta::MapMetadata,
 };
 use thiserror::Error;
@@ -50,6 +56,8 @@ pub(crate) struct SelectMapEvent;
 #[derive(Event)]
 pub(crate) struct MapSelectedEvent {
     path: PathBuf,
+    // Read by the desktop multiplayer menu, which is not compiled for Android.
+    #[cfg_attr(target_os = "android", allow(dead_code))]
     metadata: MapMetadata,
 }
 
@@ -64,6 +72,7 @@ impl MapSelectedEvent {
     }
 
     /// Selected map metadata.
+    #[cfg_attr(target_os = "android", allow(dead_code))]
     pub(crate) fn metadata(&self) -> &MapMetadata {
         &self.metadata
     }
@@ -189,6 +198,98 @@ fn button_system(
 }
 
 async fn load_available_maps() -> Result<Vec<MapEntry>, LoadingError> {
+    #[cfg(target_os = "android")]
+    {
+        return load_available_maps_from_apk().await;
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        load_available_maps_from_dir().await
+    }
+}
+
+#[cfg(target_os = "android")]
+async fn load_available_maps_from_apk() -> Result<Vec<MapEntry>, LoadingError> {
+    use async_std::io::WriteExt;
+
+    // Read the APK assets synchronously. `AAsset` is not `Send`, so it cannot
+    // be held across `.await` inside the I/O task pool.
+    let (maps_dir, packed_maps) = read_apk_maps()?;
+    fs::create_dir_all(&maps_dir)
+        .await
+        .map_err(|source| LoadingError::Io { source })?;
+
+    let mut map_entries = Vec::new();
+    for (name, bytes) in packed_maps {
+        let out_path = maps_dir.join(&name);
+        let mut file = fs::File::create(&out_path)
+            .await
+            .map_err(|source| LoadingError::Io { source })?;
+        file.write_all(&bytes)
+            .await
+            .map_err(|source| LoadingError::Io { source })?;
+        drop(file);
+
+        let metadata = load_metadata(out_path.as_path())
+            .await
+            .map_err(|source| LoadingError::Map { source })?;
+        map_entries.push(MapEntry::new(out_path.into(), metadata));
+    }
+
+    map_entries.sort_by(|a, b| a.metadata().name().cmp(b.metadata().name()));
+    Ok(map_entries)
+}
+
+#[cfg(target_os = "android")]
+fn read_apk_maps() -> Result<(async_std::path::PathBuf, Vec<(String, Vec<u8>)>), LoadingError> {
+    use std::ffi::CString;
+
+    let android_app = bevy::winit::ANDROID_APP
+        .get()
+        .expect("Bevy must be setup with the #[bevy_main] macro on Android");
+    let internal = android_app
+        .internal_data_path()
+        .ok_or_else(|| LoadingError::Io {
+            source: io::Error::new(
+                io::ErrorKind::NotFound,
+                "Android internal data path is unavailable",
+            ),
+        })?;
+    let maps_dir = async_std::path::PathBuf::from(internal).join("maps");
+
+    let mut packed_maps = Vec::new();
+    for name in env!("DE_MAP_FILES")
+        .split('|')
+        .filter(|name| !name.is_empty())
+    {
+        let asset_name = format!("maps/{name}");
+        let c_name = CString::new(asset_name.clone()).map_err(|err| LoadingError::Io {
+            source: io::Error::new(io::ErrorKind::InvalidInput, err.to_string()),
+        })?;
+        let bytes = {
+            let mut opened =
+                android_app
+                    .asset_manager()
+                    .open(&c_name)
+                    .ok_or_else(|| LoadingError::Io {
+                        source: io::Error::new(
+                            io::ErrorKind::NotFound,
+                            format!("APK asset missing: {asset_name}"),
+                        ),
+                    })?;
+            opened
+                .buffer()
+                .map_err(|source| LoadingError::Io { source })?
+                .to_vec()
+        };
+        packed_maps.push((name.to_owned(), bytes));
+    }
+
+    Ok((maps_dir, packed_maps))
+}
+
+#[cfg(not(target_os = "android"))]
+async fn load_available_maps_from_dir() -> Result<Vec<MapEntry>, LoadingError> {
     let maps_dir = asset_path("maps");
 
     let mut map_entries = Vec::new();
